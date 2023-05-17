@@ -1,0 +1,145 @@
+import { Component } from 'react';
+import { nanoid } from 'nanoid';
+import { GalLery } from './ImageGallery.styled';
+import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
+import Loader from 'components/Loader/Loader';
+import { LoaderStyle } from 'components/Loader/Loader.styled';
+import Button from 'components/Button/Button';
+import imagesAPI from 'components/services/images-api';
+import { ToastContainer, toast } from 'react-toastify';
+
+export default class ImageGallery extends Component {
+  state = {
+    images: null,
+    error: null,
+    loading: false,
+    page: 1,
+    searchQuery: '',
+    // status: 'idle',
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    // if (prevState.searchQuery !== this.state.searchQuery) {
+    if (prevProps.searchQuery !== this.props.searchQuery) {
+      this.setState({
+        page: 1,
+        images: null,
+        searchQuery: this.props.searchQuery,
+      });
+      // const query = this.props.searchQuery;
+      // this.fetchImages(query);
+    }
+  }
+
+  fetchImages = query => {
+    console.log(' call FetchImage');
+    // const query = this.state.searchQuery;
+    console.log(query);
+    const page = this.state.page;
+    console.log(page);
+    //const query = this.props.searchQuery;
+
+    this.setState({ loading: true });
+
+    imagesAPI
+      .fetchImages(query, page)
+
+      .then(images => images.hits)
+      .then(images => {
+        if (this.state.images) {
+          let newImages = [...this.state.images, ...images];
+          this.setState({
+            images: newImages,
+          });
+        } else {
+          this.setState({
+            images: images,
+          });
+        }
+      })
+      //.then(images => this.setState({ images }))
+      // .then(images => {
+      //   //   if (images.length === 0) {
+      //   //     toast.info('Try again!');
+      //   //     return;
+      //   //   }
+      //   this.setState(prevState => ({
+      //     images: [...prevState.images, ...images],
+      //     page: prevState.page + 1,
+      //   }));
+      // })
+
+      // .then(images => {
+      //   if (images.length === 0) {
+      //     toast.info('Try again!');
+      //     return;
+      //   }
+      //   this.setState(prevState => ({
+      //     images: [...prevState.images, ...images],
+      //     page: prevState.page + 1,
+      //   }));
+      // })
+      //.then(() => this.setState(prevState => ({ page: prevState.page + 1 })))
+      //.then(console.log(this.state.images))
+      .catch(error => this.setState({ error }))
+      .finally(() => {
+        this.setState({ loading: false });
+      });
+  };
+
+  // }
+  //       const query = this.props.searchQuery;
+  //       const page = this.state.page;
+  //       this.setState({ loading: true });
+
+  //       imagesAPI
+  //         .fetchImages(query, page)
+
+  //         .then(images => images.hits)
+  //         .then(images => {
+  //           if (images.length === 0) {
+  //             toast.info('Try again!');
+  //             return;
+  //           }
+  //           this.setState(prevState => ({
+  //             images: [...prevState.images, ...images],
+  //             page: prevState.page + 1,
+  //           }));
+  //         })
+  //         .catch(error => this.setState({ error }))
+  //         .finally(() => {
+  //           this.setState({ loading: false });
+  //         });
+  //     }
+  //   }
+
+  render() {
+    const { error, loading, images } = this.state;
+
+    return (
+      <div>
+        {error && <h1>{error.message}</h1>}
+        {loading && (
+          <LoaderStyle>
+            <Loader />
+          </LoaderStyle>
+        )}
+        {/* {images && (
+          <>
+            <GalLery>
+              {images.map(({ webformatURL, largeImageURL, tags }) => (
+                <ImageGalleryItem
+                  key={nanoid()}
+                  webformatURL={webformatURL}
+                  tags={tags}
+                  largeImageURL={largeImageURL}
+                />
+              ))}
+            </GalLery>
+            <Button onClick={this.fetchImages} />
+          </>
+        )} */}
+      </div>
+    );
+  }
+}
